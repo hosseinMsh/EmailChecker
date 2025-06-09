@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}جزئیات بررسی | سامانه بررسی ایمیل{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-eye me-2"></i>جزئیات بررسی</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'core:check_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> بازگشت
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">اطلاعات بررسی</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>شناسه پیام:</strong>
+                        <p><code>{{ check.message_id }}</code></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>موضوع:</strong>
+                        <p>{{ check.subject }}</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>پیکربندی:</strong>
+                        <p>{{ check.configuration.name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>وضعیت:</strong>
+                        <p>
+                            {% if check.status == 'received' %}
+                                <span class="badge bg-success fs-6">دریافت شده</span>
+                            {% elif check.status == 'sent' %}
+                                <span class="badge bg-info fs-6">ارسال شده</span>
+                            {% elif check.status == 'pending' %}
+                                <span class="badge bg-warning fs-6">در انتظار</span>
+                            {% else %}
+                                <span class="badge bg-danger fs-6">ناموفق</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>فرستنده:</strong>
+                        <p>{{ check.configuration.sender_email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>گیرنده:</strong>
+                        <p>{{ check.configuration.receiver_email }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if check.error_message %}
+        <div class="card shadow mt-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>پیام خطا</h5>
+            </div>
+            <div class="card-body">
+                <pre class="mb-0">{{ check.error_message }}</pre>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">زمان‌بندی</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>زمان ایجاد:</strong>
+                    <p class="text-muted">{{ check.created_at|date:"Y/m/d H:i:s" }}</p>
+                </div>
+                
+                {% if check.sent_at %}
+                <div class="mb-3">
+                    <strong>زمان ارسال:</strong>
+                    <p class="text-success">{{ check.sent_at|date:"Y/m/d H:i:s" }}</p>
+                </div>
+                {% endif %}
+                
+                {% if check.received_at %}
+                <div class="mb-3">
+                    <strong>زمان دریافت:</strong>
+                    <p class="text-success">{{ check.received_at|date:"Y/m/d H:i:s" }}</p>
+                </div>
+                {% endif %}
+                
+                {% if check.delivery_time %}
+                <div class="mb-3">
+                    <strong>زمان تحویل:</strong>
+                    <p class="text-info">{{ check.delivery_time.total_seconds|floatformat:2 }} ثانیه</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">عملیات</h5>
+            </div>
+            <div class="card-body">
+                {% if check.status == 'failed' or check.status == 'pending' %}
+                <div class="d-grid gap-2">
+                    <form method="post" action="{% url 'core:run_check' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="configuration" value="{{ check.configuration.id }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-redo me-1"></i> تلاش مجدد
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

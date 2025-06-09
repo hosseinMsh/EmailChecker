@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}بررسی‌ها | سامانه بررسی ایمیل{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-list-check me-2"></i>بررسی‌های ایمیل</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'core:run_check' %}" class="btn btn-primary">
+            <i class="fas fa-play me-1"></i> اجرای بررسی
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">وضعیت</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">همه</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>در انتظار</option>
+                    <option value="sent" {% if status_filter == 'sent' %}selected{% endif %}>ارسال شده</option>
+                    <option value="received" {% if status_filter == 'received' %}selected{% endif %}>دریافت شده</option>
+                    <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>ناموفق</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="q" class="form-label">جست‌وجو</label>
+                <input type="text" name="q" id="q" class="form-control" placeholder="شناسه پیام، موضوع یا پیام خطا..." value="{{ search_query|default:'' }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-search me-1"></i>جست‌وجو
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results -->
+{% if page_obj %}
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>شناسه پیام</th>
+                        <th>پیکربندی</th>
+                        <th>وضعیت</th>
+                        <th>زمان ارسال</th>
+                        <th>زمان دریافت</th>
+                        <th>زمان تحویل</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for check in page_obj %}
+                    <tr>
+                        <td>
+                            <code>{{ check.message_id|truncatechars:30 }}</code>
+                        </td>
+                        <td>{{ check.configuration.name }}</td>
+                        <td>
+                            {% if check.status == 'received' %}
+                                <span class="badge bg-success">دریافت شده</span>
+                            {% elif check.status == 'sent' %}
+                                <span class="badge bg-info">ارسال شده</span>
+                            {% elif check.status == 'pending' %}
+                                <span class="badge bg-warning">در انتظار</span>
+                            {% else %}
+                                <span class="badge bg-danger">ناموفق</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if check.sent_at %}
+                                {{ check.sent_at|date:"Y/m/d H:i:s" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if check.received_at %}
+                                {{ check.received_at|date:"Y/m/d H:i:s" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if check.delivery_time %}
+                                {{ check.delivery_time.total_seconds|floatformat:0 }} ثانیه
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'core:check_detail' check.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">اول</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">قبلی</a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">بعدی</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">آخر</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="card shadow">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">نتیجه‌ای یافت نشد</h4>
+        <p class="text-muted">با فیلترهای انتخاب شده هیچ بررسی‌ای یافت نشد.</p>
+        <a href="{% url 'core:check_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-refresh me-1"></i> نمایش همه
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

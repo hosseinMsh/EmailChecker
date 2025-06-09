@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}حذف پیکربندی | سامانه بررسی ایمیل{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-trash me-2"></i>حذف پیکربندی</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'core:configuration_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> بازگشت
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>تأیید حذف</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">آیا مطمئن هستید که می‌خواهید پیکربندی زیر را حذف کنید؟</p>
+                
+                <div class="alert alert-warning">
+                    <strong>نام:</strong> {{ configuration.name }}<br>
+                    <strong>فرستنده:</strong> {{ configuration.sender_email }}<br>
+                    <strong>گیرنده:</strong> {{ configuration.receiver_email }}
+                </div>
+                
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>هشدار:</strong> با حذف این پیکربندی، تمامی بررسی‌های مرتبط با آن نیز حذف خواهند شد. این عمل قابل بازگشت نیست.
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'core:configuration_list' %}" class="btn btn-secondary me-md-2">انصراف</a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>حذف قطعی
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

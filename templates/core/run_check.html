@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}اجرای بررسی | سامانه بررسی ایمیل{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-play me-2"></i>اجرای بررسی فوری</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'core:check_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-list me-1"></i> مشاهده بررسی‌ها
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-rocket me-2"></i>شروع بررسی جدید</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    برای اجرای یک بررسی فوری، پیکربندی مورد نظر را انتخاب کنید. سیستم فوراً یک ایمیل تستی ارسال کرده و وضعیت دریافت آن را بررسی خواهد کرد.
+                </p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.configuration.id_for_label }}" class="form-label">انتخاب پیکربندی</label>
+                        {{ form.configuration }}
+                        {% if form.configuration.errors %}
+                        <div class="text-danger">
+                            {% for error in form.configuration.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">فقط پیکربندی‌های فعال نمایش داده می‌شوند.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-play me-2"></i>شروع بررسی
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>نکات مهم</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>بررسی ممکن است چند دقیقه طول بکشد</li>
+                    <li>نتایج در صفحه بررسی‌ها قابل مشاهده خواهند بود</li>
+                    <li>در صورت عدم دریافت ایمیل، سیستم چندین بار تلاش خواهد کرد</li>
+                    <li>اطمینان حاصل کنید که اطلاعات پیکربندی صحیح است</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
